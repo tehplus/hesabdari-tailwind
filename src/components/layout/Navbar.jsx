@@ -1,138 +1,151 @@
+/**
+ * @file Top Navigation Bar Component
+ * @description Header navigation with search, notifications and user menu
+ * @author tehplus
+ * @date 2025-03-31 15:28:15
+ */
+
 import { Fragment } from 'react';
+import { Link } from 'react-router-dom';
 import { Menu, Transition } from '@headlessui/react';
 import {
   Bars3Icon,
   BellIcon,
+  ChevronDownIcon,
+  MagnifyingGlassIcon,
   UserCircleIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon,
+  QuestionMarkCircleIcon
 } from '@heroicons/react/24/outline';
-import { ChevronDownIcon } from '@heroicons/react/20/solid';
 
+// ثابت‌های مورد نیاز برای منوی کاربر
+const userNavigation = [
+  { name: 'پروفایل', href: '#', icon: UserCircleIcon },
+  { name: 'تنظیمات', href: '#', icon: Cog6ToothIcon },
+  { name: 'راهنما', href: '#', icon: QuestionMarkCircleIcon },
+  { name: 'خروج', href: '#', icon: ArrowRightOnRectangleIcon }
+];
+
+// فانکشن برای کلاس‌های پویا
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
 export default function Navbar({ setSidebarOpen }) {
+  // اطلاعات کاربر فعلی - در نسخه‌های بعدی از کانتکست یا ریداکس خوانده می‌شود
+  const currentUser = {
+    name: 'کاربر تست',
+    email: 'user@test.com',
+    imageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+  };
+
   return (
-    <nav className="sticky top-0 z-10 bg-white shadow">
-      <div className="mx-auto max-w-7xl px-2 sm:px-4 lg:px-8">
-        <div className="flex h-16 justify-between">
-          <div className="flex px-2 lg:px-0">
-            <div className="flex flex-shrink-0 items-center lg:hidden">
-              <button
-                type="button"
-                className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <span className="sr-only">باز کردن منو</span>
-                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-              </button>
-            </div>
-          </div>
+    <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+      {/* دکمه باز کردن سایدبار در حالت موبایل */}
+      <button
+        type="button"
+        className="-m-2.5 p-2.5 text-gray-700 lg:hidden"
+        onClick={() => setSidebarOpen(true)}
+      >
+        <span className="sr-only">باز کردن منو</span>
+        <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+      </button>
 
-          <div className="flex flex-1 items-center justify-center px-2 lg:mr-6 lg:justify-end">
-            <div className="w-full max-w-lg lg:max-w-xs">
-              <label htmlFor="search" className="sr-only">
-                جستجو
-              </label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </div>
-                <input
-                  id="search"
-                  name="search"
-                  className="block w-full rounded-md border border-gray-300 bg-white py-2 pr-10 pl-3 leading-5 placeholder-gray-500 focus:border-primary-500 focus:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-primary-500 sm:text-sm"
-                  placeholder="جستجو"
-                  type="search"
-                />
-              </div>
-            </div>
-          </div>
+      {/* جداکننده */}
+      <div className="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true" />
 
-          <div className="flex items-center lg:hidden">
-            <button
-              type="button"
-              className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-100 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-500"
-            >
+      {/* باکس جستجو */}
+      <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+        <form className="relative flex flex-1" action="#" method="GET">
+          <label htmlFor="search-field" className="sr-only">
+            جستجو
+          </label>
+          <MagnifyingGlassIcon
+            className="pointer-events-none absolute right-0 h-full w-5 text-gray-400"
+            aria-hidden="true"
+          />
+          <input
+            id="search-field"
+            className="block h-full w-full border-0 py-0 pr-8 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+            placeholder="جستجو..."
+            type="search"
+            name="search"
+          />
+        </form>
+
+        <div className="flex items-center gap-x-4 lg:gap-x-6">
+          {/* دکمه اعلان‌ها */}
+          <button
+            type="button"
+            className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+          >
+            <span className="sr-only">نمایش اعلان‌ها</span>
+            <BellIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+
+          {/* جداکننده */}
+          <div
+            className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"
+            aria-hidden="true"
+          />
+
+          {/* منوی کاربر */}
+          <Menu as="div" className="relative">
+            <Menu.Button className="-m-1.5 flex items-center p-1.5">
               <span className="sr-only">باز کردن منوی کاربر</span>
-              <BellIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-          </div>
-
-          <div className="hidden lg:ml-4 lg:flex lg:items-center">
-            <button
-              type="button"
-              className="flex-shrink-0 rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
+              <img
+                className="h-8 w-8 rounded-full bg-gray-50"
+                src={currentUser.imageUrl}
+                alt=""
+              />
+              <span className="hidden lg:flex lg:items-center">
+                <span
+                  className="mr-4 text-sm font-semibold leading-6 text-gray-900"
+                  aria-hidden="true"
+                >
+                  {currentUser.name}
+                </span>
+                <ChevronDownIcon
+                  className="mr-2 h-5 w-5 text-gray-400"
+                  aria-hidden="true"
+                />
+              </span>
+            </Menu.Button>
+            <Transition
+              as={Fragment}
+              enter="transition ease-out duration-100"
+              enterFrom="transform opacity-0 scale-95"
+              enterTo="transform opacity-100 scale-100"
+              leave="transition ease-in duration-75"
+              leaveFrom="transform opacity-100 scale-100"
+              leaveTo="transform opacity-0 scale-95"
             >
-              <span className="sr-only">مشاهده اعلان‌ها</span>
-              <BellIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-
-            {/* پروفایل کاربر */}
-            <Menu as="div" className="relative ml-4 flex-shrink-0">
-              <div>
-                <Menu.Button className="flex rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                  <span className="sr-only">باز کردن منوی کاربر</span>
-                  <UserCircleIcon className="h-8 w-8 text-gray-400" aria-hidden="true" />
-                </Menu.Button>
-              </div>
-              <Transition
-                as={Fragment}
-                enter="transition ease-out duration-100"
-                enterFrom="transform opacity-0 scale-95"
-                enterTo="transform opacity-100 scale-100"
-                leave="transition ease-in duration-75"
-                leaveFrom="transform opacity-100 scale-100"
-                leaveTo="transform opacity-0 scale-95"
-              >
-                <Menu.Items className="absolute left-0 z-10 mt-2 w-48 origin-top-left rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                  <Menu.Item>
+              <Menu.Items className="absolute left-0 z-10 mt-2.5 w-56 origin-top-left rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                {userNavigation.map((item) => (
+                  <Menu.Item key={item.name}>
                     {({ active }) => (
-                      <a
-                        href="#"
+                      <Link
+                        to={item.href}
                         className={classNames(
-                          active ? 'bg-gray-100' : '',
-                          'block px-4 py-2 text-sm text-gray-700'
+                          active ? 'bg-gray-50' : '',
+                          'flex px-3 py-2 text-sm leading-6 text-gray-900 items-center'
                         )}
                       >
-                        پروفایل
-                      </a>
+                        <item.icon
+                          className="ml-2 h-5 w-5 text-gray-400"
+                          aria-hidden="true"
+                        />
+                        {item.name}
+                      </Link>
                     )}
                   </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active ? 'bg-gray-100' : '',
-                          'block px-4 py-2 text-sm text-gray-700'
-                        )}
-                      >
-                        تنظیمات
-                      </a>
-                    )}
-                  </Menu.Item>
-                  <Menu.Item>
-                    {({ active }) => (
-                      <a
-                        href="#"
-                        className={classNames(
-                          active ? 'bg-gray-100' : '',
-                          'block px-4 py-2 text-sm text-gray-700'
-                        )}
-                      >
-                        خروج
-                      </a>
-                    )}
-                  </Menu.Item>
-                </Menu.Items>
-              </Transition>
-            </Menu>
-          </div>
+                ))}
+              </Menu.Items>
+            </Transition>
+          </Menu>
         </div>
       </div>
-    </nav>
+    </div>
   );
 }

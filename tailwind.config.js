@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+const defaultTheme = require('tailwindcss/defaultTheme');
+
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,7 +9,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['IRANSans', 'Vazir', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['IRANSans', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         primary: {
@@ -21,6 +23,7 @@ export default {
           700: '#0369a1',
           800: '#075985',
           900: '#0c4a6e',
+          950: '#082f49',
         },
       },
     },
