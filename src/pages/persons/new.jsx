@@ -1,533 +1,436 @@
+/**
+ * @file New Person Form Page
+ * @description Create new person with details
+ * @date 2025-03-31 15:45:56
+ */
+
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import {
-  UserIcon,
-  PhoneIcon,
-  EnvelopeIcon,
-  BuildingOfficeIcon,
-  IdentificationIcon,
-  MapPinIcon,
-  BanknotesIcon,
-  ClockIcon,
-  ChatBubbleBottomCenterTextIcon
-} from '@heroicons/react/24/outline';
+import { PhotoIcon, ArrowUpTrayIcon, CurrencyDollarIcon, ScaleIcon, CalculatorIcon, PlusIcon, MinusIcon, TagIcon, QrCodeIcon, BuildingOfficeIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 
 export default function PersonNew() {
-  const [activeTab, setActiveTab] = useState('general');
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
   const [formData, setFormData] = useState({
-    // اطلاعات عمومی
-    type: 'real', // real یا legal
-    firstName: '',
-    lastName: '',
-    nationalCode: '',
-    economicCode: '',
-    registrationNumber: '',
-    birthDate: '',
-    mobile: '',
-    phone: '',
-    email: '',
-    website: '',
-    address: '',
-    postalCode: '',
+    name: '',
+    code: '',
+    category: '',
     description: '',
-    // اطلاعات مالی
-    initialBalance: '0',
-    creditLimit: '0',
-    paymentDays: '0',
-    bankAccounts: [],
-    // تنظیمات
+    unit: '',
+    barcode: '',
+    buyPrice: '',
+    sellPrice: '',
+    stock: '0',
+    minStock: '0',
+    hasTax: false,
+    taxRate: '9',
+    taxCode: '',
     isActive: true,
-    sendSMS: false,
-    sendEmail: false,
-    allowPortal: false
+    image: null,
+    additionalProperties: []
   });
 
-  const tabs = [
-    { id: 'general', name: 'اطلاعات عمومی' },
-    { id: 'financial', name: 'اطلاعات مالی' },
-    { id: 'settings', name: 'تنظیمات' }
+  const categories = [
+    { id: '1', name: 'دسته 1' },
+    { id: '2', name: 'دسته 2' },
+    { id: '3', name: 'دسته 3' }
   ];
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      // اینجا عملیات ذخیره‌سازی انجام می‌شود
-      toast.success('اطلاعات با موفقیت ذخیره شد');
-    } catch (error) {
-      toast.error('خطا در ذخیره‌سازی اطلاعات');
+  const units = [
+    { id: 'piece', name: 'عدد' },
+    { id: 'box', name: 'جعبه' },
+    { id: 'kg', name: 'کیلوگرم' },
+    { id: 'meter', name: 'متر' },
+    { id: 'liter', name: 'لیتر' }
+  ];
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setFormData(prev => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const renderGeneralInfo = () => (
-    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-        <div className="flex items-center">
-          <div className="flex items-center">
-            <input
-              type="radio"
-              id="type-real"
-              name="type"
-              value="real"
-              checked={formData.type === 'real'}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
-            <label htmlFor="type-real" className="mr-2 block text-sm font-medium text-gray-700">
-              شخص حقیقی
-            </label>
-          </div>
-          <div className="flex items-center mr-6">
-            <input
-              type="radio"
-              id="type-legal"
-              name="type"
-              value="legal"
-              checked={formData.type === 'legal'}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-              className="h-4 w-4 border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
-            <label htmlFor="type-legal" className="mr-2 block text-sm font-medium text-gray-700">
-              شخص حقوقی
-            </label>
-          </div>
-        </div>
-      </div>
+  const handleAddProperty = () => {
+    setFormData(prev => ({
+      ...prev,
+      additionalProperties: [...prev.additionalProperties, { key: '', value: '' }]
+    }));
+  };
 
-      {formData.type === 'real' ? (
-        <>
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-              نام
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <UserIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="firstName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              />
-            </div>
-          </div>
+  const handleRemoveProperty = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalProperties: prev.additionalProperties.filter((_, i) => i !== index)
+    }));
+  };
 
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-              نام خانوادگی
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <UserIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="lastName"
-                value={formData.lastName}
-                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              />
-            </div>
-          </div>
+  const handlePropertyChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalProperties: prev.additionalProperties.map((prop, i) => {
+        if (i === index) {
+          return { ...prop, [field]: value };
+        }
+        return prop;
+      })
+    }));
+  };
 
-          <div>
-            <label htmlFor="nationalCode" className="block text-sm font-medium text-gray-700">
-              کد ملی
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <IdentificationIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="nationalCode"
-                value={formData.nationalCode}
-                onChange={(e) => setFormData({ ...formData, nationalCode: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                dir="ltr"
-              />
-            </div>
-          </div>
-        </>
-      ) : (
-        <>
-          <div>
-            <label htmlFor="companyName" className="block text-sm font-medium text-gray-700">
-              نام شرکت
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <BuildingOfficeIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="companyName"
-                value={formData.firstName}
-                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-              />
-            </div>
-          </div>
+  const validateForm = () => {
+    const newErrors = {};
 
-          <div>
-            <label htmlFor="economicCode" className="block text-sm font-medium text-gray-700">
-              کد اقتصادی
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <IdentificationIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="economicCode"
-                value={formData.economicCode}
-                onChange={(e) => setFormData({ ...formData, economicCode: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                dir="ltr"
-              />
-            </div>
-          </div>
+    if (!formData.code) {
+      newErrors.code = 'کد محصول اجباری است';
+    }
 
-          <div>
-            <label htmlFor="registrationNumber" className="block text-sm font-medium text-gray-700">
-              شماره ثبت
-            </label>
-            <div className="mt-1 relative rounded-md shadow-sm">
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <IdentificationIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-              </div>
-              <input
-                type="text"
-                id="registrationNumber"
-                value={formData.registrationNumber}
-                onChange={(e) => setFormData({ ...formData, registrationNumber: e.target.value })}
-                className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                dir="ltr"
-              />
-            </div>
-          </div>
-        </>
-      )}
+    if (!formData.name) {
+      newErrors.name = 'نام محصول اجباری است';
+    }
 
-      <div>
-        <label htmlFor="mobile" className="block text-sm font-medium text-gray-700">
-          موبایل
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <PhoneIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="tel"
-            id="mobile"
-            value={formData.mobile}
-            onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+    if (!formData.category) {
+      newErrors.category = 'دسته‌بندی اجباری است';
+    }
 
-      <div>
-        <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-          تلفن ثابت
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <PhoneIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="tel"
-            id="phone"
-            value={formData.phone}
-            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+    if (!formData.unit) {
+      newErrors.unit = 'واحد اجباری است';
+    }
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          ایمیل
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <EnvelopeIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+    if (!formData.sellPrice) {
+      newErrors.sellPrice = 'قیمت فروش اجباری است';
+    } else if (Number(formData.sellPrice) <= 0) {
+      newErrors.sellPrice = 'قیمت فروش باید بزرگتر از صفر باشد';
+    }
 
-      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-          آدرس
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute top-2 right-0 pr-3 flex items-center pointer-events-none">
-            <MapPinIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <textarea
-            id="address"
-            rows={3}
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-          />
-        </div>
-      </div>
+    if (formData.barcode && formData.barcode.length !== 13) {
+      newErrors.barcode = 'بارکد باید 13 رقم باشد';
+    }
 
-      <div>
-        <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700">
-          کد پستی
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <MapPinIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="text"
-            id="postalCode"
-            value={formData.postalCode}
-            onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+    if (formData.hasTax) {
+      if (!formData.taxCode) {
+        newErrors.taxCode = 'کد مالیاتی اجباری است';
+      } else if (formData.taxCode.length !== 13) {
+        newErrors.taxCode = 'کد مالیاتی باید 13 رقم باشد';
+      }
+    }
 
-      <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-          توضیحات
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute top-2 right-0 pr-3 flex items-center pointer-events-none">
-            <ChatBubbleBottomCenterTextIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <textarea
-            id="description"
-            rows={3}
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-          />
-        </div>
-      </div>
-    </div>
-  );
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
-  const renderFinancialInfo = () => (
-    <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-2 lg:grid-cols-3">
-      <div>
-        <label htmlFor="initialBalance" className="block text-sm font-medium text-gray-700">
-          مانده حساب اولیه
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <BanknotesIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="number"
-            id="initialBalance"
-            value={formData.initialBalance}
-            onChange={(e) => setFormData({ ...formData, initialBalance: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-      <div>
-        <label htmlFor="creditLimit" className="block text-sm font-medium text-gray-700">
-          سقف اعتبار
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <BanknotesIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="number"
-            id="creditLimit"
-            value={formData.creditLimit}
-            onChange={(e) => setFormData({ ...formData, creditLimit: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
+    if (!validateForm()) {
+      toast.error('لطفاً خطاهای فرم را برطرف کنید');
+      return;
+    }
 
-      <div>
-        <label htmlFor="paymentDays" className="block text-sm font-medium text-gray-700">
-          مهلت تسویه (روز)
-        </label>
-        <div className="mt-1 relative rounded-md shadow-sm">
-          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-            <ClockIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
-          </div>
-          <input
-            type="number"
-            id="paymentDays"
-            value={formData.paymentDays}
-            onChange={(e) => setFormData({ ...formData, paymentDays: e.target.value })}
-            className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-            dir="ltr"
-          />
-        </div>
-      </div>
-    </div>
-  );
+    try {
+      setLoading(true);
 
-  const renderSettings = () => (
-    <div className="space-y-6">
-      <div className="relative flex items-start">
-        <div className="flex h-5 items-center">
-          <input
-            id="isActive"
-            type="checkbox"
-            checked={formData.isActive}
-            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-        </div>
-        <div className="mr-3 text-sm">
-          <label htmlFor="isActive" className="font-medium text-gray-700">
-            فعال
-          </label>
-          <p className="text-gray-500">این شخص در سیستم فعال باشد</p>
-        </div>
-      </div>
+      // در اینجا API call برای ذخیره محصول
 
-      <div className="relative flex items-start">
-        <div className="flex h-5 items-center">
-          <input
-            id="sendSMS"
-            type="checkbox"
-            checked={formData.sendSMS}
-            onChange={(e) => setFormData({ ...formData, sendSMS: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-        </div>
-        <div className="mr-3 text-sm">
-          <label htmlFor="sendSMS" className="font-medium text-gray-700">
-            ارسال پیامک
-          </label>
-          <p className="text-gray-500">اطلاع‌رسانی از طریق پیامک انجام شود</p>
-        </div>
-      </div>
+      toast.success('محصول با موفقیت ثبت شد');
+      navigate('/persons');
+    } catch (error) {
+      toast.error('خطا در ثبت محصول');
+      setLoading(false);
+    }
+  };
 
-      <div className="relative flex items-start">
-        <div className="flex h-5 items-center">
-          <input
-            id="sendEmail"
-            type="checkbox"
-            checked={formData.sendEmail}
-            onChange={(e) => setFormData({ ...formData, sendEmail: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-        </div>
-        <div className="mr-3 text-sm">
-          <label htmlFor="sendEmail" className="font-medium text-gray-700">
-            ارسال ایمیل
-          </label>
-          <p className="text-gray-500">اطلاع‌رسانی از طریق ایمیل انجام شود</p>
-        </div>
-      </div>
-
-      <div className="relative flex items-start">
-        <div className="flex h-5 items-center">
-          <input
-            id="allowPortal"
-            type="checkbox"
-            checked={formData.allowPortal}
-            onChange={(e) => setFormData({ ...formData, allowPortal: e.target.checked })}
-            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-          />
-        </div>
-        <div className="mr-3 text-sm">
-          <label htmlFor="allowPortal" className="font-medium text-gray-700">
-            دسترسی به پورتال
-          </label>
-          <p className="text-gray-500">امکان ورود به پورتال مشتریان</p>
-        </div>
-      </div>
-    </div>
-  );
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
 
   return (
-    <form className="space-y-6" onSubmit={handleSubmit}>
+    <div className="space-y-6">
       <div className="pb-5 border-b border-gray-200">
         <h3 className="text-lg leading-6 font-medium text-gray-900">
-          {formData.type === 'real' ? 'مشخصات شخص حقیقی' : 'مشخصات شخص حقوقی'}
+          ایجاد محصول جدید
         </h3>
       </div>
 
-      <div>
-        <div className="sm:hidden">
-          <label htmlFor="tabs" className="sr-only">
-            انتخاب برگه
-          </label>
-          <select
-            id="tabs"
-            name="tabs"
-            className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500"
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value)}
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="col-span-1">
+            <label htmlFor="code" className="block text-sm font-medium text-gray-700">
+              کد محصول
+            </label>
+            <input
+              type="text"
+              name="code"
+              id="code"
+              value={formData.code}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.code && <p className="mt-1 text-sm text-red-600">{errors.code}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              نام محصول
+            </label>
+            <input
+              type="text"
+              name="name"
+              id="name"
+              value={formData.name}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+              دسته‌بندی
+            </label>
+            <select
+              name="category"
+              id="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="">انتخاب دسته‌بندی</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+            {errors.category && <p className="mt-1 text-sm text-red-600">{errors.category}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="unit" className="block text-sm font-medium text-gray-700">
+              واحد
+            </label>
+            <select
+              name="unit"
+              id="unit"
+              value={formData.unit}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="">انتخاب واحد</option>
+              {units.map((unit) => (
+                <option key={unit.id} value={unit.id}>
+                  {unit.name}
+                </option>
+              ))}
+            </select>
+            {errors.unit && <p className="mt-1 text-sm text-red-600">{errors.unit}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">
+              بارکد
+            </label>
+            <input
+              type="text"
+              name="barcode"
+              id="barcode"
+              value={formData.barcode}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.barcode && <p className="mt-1 text-sm text-red-600">{errors.barcode}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="buyPrice" className="block text-sm font-medium text-gray-700">
+              قیمت خرید
+            </label>
+            <input
+              type="text"
+              name="buyPrice"
+              id="buyPrice"
+              value={formData.buyPrice}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="sellPrice" className="block text-sm font-medium text-gray-700">
+              قیمت فروش
+            </label>
+            <input
+              type="text"
+              name="sellPrice"
+              id="sellPrice"
+              value={formData.sellPrice}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+            {errors.sellPrice && <p className="mt-1 text-sm text-red-600">{errors.sellPrice}</p>}
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">
+              موجودی
+            </label>
+            <input
+              type="text"
+              name="stock"
+              id="stock"
+              value={formData.stock}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+
+          <div className="col-span-1">
+            <label htmlFor="minStock" className="block text-sm font-medium text-gray-700">
+              حداقل موجودی
+            </label>
+            <input
+              type="text"
+              name="minStock"
+              id="minStock"
+              value={formData.minStock}
+              onChange={handleChange}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            />
+          </div>
+
+          <div className="col-span-1 flex items-center">
+            <input
+              type="checkbox"
+              name="hasTax"
+              id="hasTax"
+              checked={formData.hasTax}
+              onChange={handleChange}
+              className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+            />
+            <label htmlFor="hasTax" className="ml-2 block text-sm font-medium text-gray-700">
+              شامل مالیات
+            </label>
+          </div>
+
+          {formData.hasTax && (
+            <>
+              <div className="col-span-1">
+                <label htmlFor="taxCode" className="block text-sm font-medium text-gray-700">
+                  کد مالیاتی
+                </label>
+                <input
+                  type="text"
+                  name="taxCode"
+                  id="taxCode"
+                  value={formData.taxCode}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+                {errors.taxCode && <p className="mt-1 text-sm text-red-600">{errors.taxCode}</p>}
+              </div>
+
+              <div className="col-span-1">
+                <label htmlFor="taxRate" className="block text-sm font-medium text-gray-700">
+                  نرخ مالیات (%)
+                </label>
+                <input
+                  type="text"
+                  name="taxRate"
+                  id="taxRate"
+                  value={formData.taxRate}
+                  onChange={handleChange}
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                />
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center justify-between border-t border-gray-200 pt-5 mt-5">
+          <h3 className="text-lg leading-6 font-medium text-gray-900">
+            ویژگی‌های اضافی
+          </h3>
+          <button
+            type="button"
+            onClick={handleAddProperty}
+            className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
-            {tabs.map((tab) => (
-              <option key={tab.id} value={tab.id}>
-                {tab.name}
-              </option>
-            ))}
-          </select>
+            <PlusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+            افزودن ویژگی
+          </button>
         </div>
-        <div className="hidden sm:block">
-          <nav className="flex space-x-4 space-x-reverse" aria-label="Tabs">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveTab(tab.id)}
-                className={`${
-                  activeTab === tab.id
-                    ? 'bg-primary-100 text-primary-700'
-                    : 'text-gray-500 hover:text-gray-700'
-                } rounded-md px-3 py-2 text-sm font-medium`}
-              >
-                {tab.name}
-              </button>
+
+        {formData.additionalProperties.length > 0 && (
+          <div className="mt-5 space-y-6">
+            {formData.additionalProperties.map((property, index) => (
+              <div key={index} className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="col-span-1">
+                  <label htmlFor={`property-key-${index}`} className="block text-sm font-medium text-gray-700">
+                    کلید
+                  </label>
+                  <input
+                    type="text"
+                    name={`property-key-${index}`}
+                    id={`property-key-${index}`}
+                    value={property.key}
+                    onChange={(e) => handlePropertyChange(index, 'key', e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="col-span-1">
+                  <label htmlFor={`property-value-${index}`} className="block text-sm font-medium text-gray-700">
+                    مقدار
+                  </label>
+                  <input
+                    type="text"
+                    name={`property-value-${index}`}
+                    id={`property-value-${index}`}
+                    value={property.value}
+                    onChange={(e) => handlePropertyChange(index, 'value', e.target.value)}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="col-span-1 flex items-end">
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveProperty(index)}
+                    className="flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  >
+                    <MinusIcon className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
+                    حذف
+                  </button>
+                </div>
+              </div>
             ))}
-          </nav>
+          </div>
+        )}
+
+        <div className="mt-6">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            {loading ? 'در حال ثبت...' : 'ثبت محصول'}
+          </button>
         </div>
-      </div>
-
-      <div className="mt-6">
-        {activeTab === 'general' && renderGeneralInfo()}
-        {activeTab === 'financial' && renderFinancialInfo()}
-        {activeTab === 'settings' && renderSettings()}
-      </div>
-
-      <div className="flex justify-end space-x-3 space-x-reverse">
-        <button
-          type="submit"
-          className="inline-flex justify-center rounded-md border border-transparent bg-primary-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          ذخیره
-        </button>
-        <button
-          type="button"
-          className="rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
-        >
-          انصراف
-        </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }

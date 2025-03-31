@@ -8,7 +8,7 @@ import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/dashboard';
 import ProductsList from './pages/products/list';
 import ProductNew from './pages/products/new';
-
+import Dashboard from './pages/dashboard/index';
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 

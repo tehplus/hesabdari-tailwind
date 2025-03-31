@@ -1,8 +1,7 @@
 /**
  * @file Dashboard Page
  * @description Main dashboard with charts and statistics
- * @author tehplus
- * @date 2025-03-31 15:37:57
+ * @date 2025-03-31 15:43:05
  */
 
 import { useState, useEffect } from 'react';
